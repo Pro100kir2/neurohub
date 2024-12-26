@@ -38,7 +38,6 @@ else:
         'port': os.getenv('DB_PORT', '5432'),
     }
 
-
 # JWT конфигурация
 JWT_SECRET = os.getenv('JWT_SECRET', 'your_jwt_secret_key')
 JWT_ALGORITHM = 'HS256'
@@ -51,6 +50,7 @@ FRONTEND_TEMPLATES_PATH = '/neurohub-backend/templates/pages'
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
 
+
 # Функция для генерации случайного ключа с учетом требований
 def generate_key(length: int) -> str:
     # Разрешенные символы: латинские буквы, цифры, кириллица и корейские символы
@@ -58,6 +58,7 @@ def generate_key(length: int) -> str:
 
     # Генерация ключа заданной длины
     return ''.join(random.choice(allowed_chars) for _ in range(length))
+
 
 def get_user_from_db(user_id):
     # Пример выполнения запроса к базе данных
@@ -71,6 +72,26 @@ def get_user_from_db(user_id):
             'plan': result[2]
         }
     return None
+
+
+def refresh_token(token):
+    try:
+        # Декодируем старый токен без проверки на срок действия
+        user_data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_exp": False})
+
+        # Обновляем токен с новым временем истечения
+        new_token = jwt.encode({
+            'id': user_data['id'],
+            'name': user_data['name'],
+            'email': user_data['email'],
+            'plan': user_data['plan'],
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)  # Новый срок действия
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+        return new_token
+    except jwt.InvalidTokenError:
+        return None
+
 
 # Главная страница
 @app.route('/')
@@ -122,8 +143,6 @@ def register():
             if conn:
                 conn.close()
 
-
-
 # Вход пользователя
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -157,14 +176,14 @@ def login():
                     'name': user[1],
                     'email': user[2],
                     'plan': user[3],
-                    'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+                    'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
                 }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-                # Сохраняем токен в cookies
-                response = redirect(url_for('profile'))  # Исправлено имя маршрута
-                response.set_cookie('token', token)
+                print(f"Generated token: {token}")  # Логируем токен при входе
 
-                print(f"Token set in cookies: {token}")  # Выводим токен в консоль для отладки
+                # Сохраняем токен в cookies
+                response = redirect(url_for('profile'))
+                response.set_cookie('token', token)
 
                 return jsonify({
                     'message': 'Вход выполнен успешно!',
@@ -177,18 +196,38 @@ def login():
         finally:
             if conn:
                 conn.close()
+# Профиль
 @app.route('/profile')
 def profile():
     token = request.cookies.get('token')
 
     if not token:
-        return redirect(url_for('login'))  # Перенаправляем на страницу логина, если токен отсутствует
+        print("No token found in cookies")  # Логируем, если токен отсутствует
+        return redirect(url_for('login'))  # Перенаправляем на страницу входа, если токен отсутствует
 
     try:
-        # Декодируем токен, чтобы получить информацию о пользователе
-        user_data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_exp": False})
+        print(f"User data from token: {user_data}")  # Логируем декодированные данные токена
 
-        # Передаем данные пользователя в шаблон
+        # Приводим время в token в объект с временной зоной (aware datetime)
+        token_exp_time = datetime.datetime.fromtimestamp(user_data['exp'], tz=datetime.timezone.utc)
+        print(f"Token expiration time: {token_exp_time}")
+
+        # Проверка истечения токена
+        if datetime.datetime.now(datetime.timezone.utc) > token_exp_time:
+            print("Token expired, refreshing...")  # Логируем, что токен истек
+            new_token = refresh_token(token)
+            if new_token:
+                print(f"New token: {new_token}")  # Логируем новый токен
+                response = redirect(url_for('profile'))
+                response.set_cookie('token', new_token, httponly=True, secure=True)  # Устанавливаем новый токен
+                return response
+            else:
+                print("Failed to refresh token")  # Логируем ошибку при обновлении токена
+                return redirect(url_for('login'))  # Если токен не обновился, перенаправляем на вход
+
+        # Если токен еще действителен, просто рендерим страницу
+        print(f"Token is valid. Rendering profile page...")  # Логируем, если токен действителен
         return render_template(
             'profile-page.html',
             name=user_data['name'],
@@ -196,10 +235,11 @@ def profile():
             plan=user_data['plan']
         )
     except jwt.ExpiredSignatureError:
-        return redirect(url_for('login'))  # Токен истек
+        print("Token expired (signature error)")  # Логируем ошибку при истечении срока действия токена
+        return redirect(url_for('login'))  # Перенаправляем на страницу входа при истечении токена
     except jwt.InvalidTokenError:
-        return redirect(url_for('login'))  # Невалидный токен
-
+        print("Invalid token error")  # Логируем ошибку при неверном токене
+        return redirect(url_for('login'))  # Перенаправляем при неверном токене
 # Страницы о проекте и политике конфиденциальности
 @app.route('/about')
 def about():
@@ -215,10 +255,17 @@ def privacy_policy():
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('NotFoundPage.js'), 404
+
+
+# Логика выхода
 @app.route('/logout')
 def logout():
-    return render_template('home.html')
-
+    response = redirect(url_for('home'))
+    response.delete_cookie('token')  # Удаляем cookie с токеном
+    return response
+@app.route('/neuro')
+def neuro():
+    return render_template('home-profile.html')
 
 # Запуск приложения
 if __name__ == '__main__':
