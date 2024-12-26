@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Successful Registration</title>
+    <style>
+        /* Базовые стили для body и html */
+body, html {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: linear-gradient(to right, #6a11cb, #2575fc); /* Фоновый градиент */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Центрируем весь контент */
+    color: #333;
+    overflow: auto; /* Прокрутка, если контента слишком много */
+}
+
+/* Основные стили для контента */
+.content {
+    width: 90%;
+    max-width: 800px;
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(to right, #6a11cb, #2575fc); /* Фоновый градиент */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+/* Заголовок */
+h1 {
+    font-size: clamp(24px, 6vw, 48px);
+    margin-bottom: 20px;
+    color: white;
+}
+
+/* Стили для текста, показывающего ключи */
+.label {
+    font-weight: bold;
+    color: #000;
+    font-size: 30px;
+}
+
+.key {
+    color: white; /* Розовый цвет для ключей */
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Предупреждение */
+.warning {
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-size: 36px;
+}
+
+.warning h3 {
+    margin: 0;
+    font-weight: bold;
+}
+
+/* Стили для ссылок */
+.extra-links {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.extra-links a {
+    color: #ff69b4;
+    text-decoration: none;
+}
+
+.extra-links a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность для экранов меньше 768px */
+@media (max-width: 768px) {
+    .content {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: clamp(24px, 8vw, 36px);
+    }
+
+    .label, .key {
+        font-size: clamp(16px, 6vw, 20px);
+    }
+
+    .warning {
+        font-size: clamp(14px, 6vw, 18px);
+    }
+
+    .extra-links a {
+        font-size: clamp(14px, 6vw, 18px);
+    }
+}
+
+/* Адаптивность для экранов меньше 480px */
+@media (max-width: 480px) {
+    .content {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: clamp(24px, 10vw, 30px);
+    }
+
+    .label, .key {
+        font-size: clamp(14px, 8vw, 16px);
+    }
+
+    .warning {
+        font-size: clamp(14px, 8vw, 16px);
+    }
+
+    .extra-links a {
+        font-size: clamp(14px, 8vw, 16px);
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Congratulations on your successful registration!</h1>
+        <p><strong class="label">Your public key:</strong> <span class="key">{{ public_key }}</span></p>
+        <p><strong class="label">Your private key:</strong> <span class="key">{{ private_key }}</span></p>
+
+        <div class="warning">
+            <h3>!!! IMPORTANT !!!</h3>
+            <p><strong>Never share your private key!</strong></p>
+            <p>Your private key is for your use only. Only scammers will ask for it. <br>Keep it safe!</p>
+        </div>
+
+        <div class="extra-links">
+            <a href="/login">Go to Login page</a>
+        </div>
+    </div>
+</body>
+</html>

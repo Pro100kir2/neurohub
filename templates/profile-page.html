@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        /* Сброс базовых стилей */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            font-family: Arial, sans-serif;
+        }
+
+        /* Стили для заголовка */
+        header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            text-align: center; /* Центрируем текст */
+            padding: 15px 0;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        /* Основные стили */
+        main {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        /* Стили для таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* Стили для кнопок */
+        button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>User Profile</h1>
+    </header>
+
+    <main>
+        <h2>Your profile information</h2>
+
+        <table>
+            <tr>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>{{ name }}</td> <!-- Используем Jinja2 для вывода данных -->
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td>{{ email }}</td> <!-- Используем Jinja2 для вывода данных -->
+            </tr>
+            <tr>
+                <td>Tariff</td>
+                <td>{{ plan }}</td> <!-- Используем Jinja2 для вывода данных -->
+            </tr>
+        </table>
+
+        <div class="button-container">
+            <button onclick="window.location.href='/edit-profile'">Edit Profile</button>
+            <button onclick="window.location.href='/choose-plan'">Choose Plan</button>
+            <button onclick="window.location.href='/neuro'">Go to Neuro</button>
+        </div>
+    </main>
+</body>
+</html>

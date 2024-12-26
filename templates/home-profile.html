@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <style>
+      /* Общие стили для всей страницы */
+      body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+          background: linear-gradient(to right, #6a11cb, #2575fc); /* Фоновый градиент */
+          color: black;
+          overflow-x: hidden; /* Убираем горизонтальную прокрутку */
+          height: 100%; /* Устанавливаем высоту страницы на весь экран */
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start; /* Контент не будет растягиваться на весь экран */
+      }
+
+      header {
+          background: linear-gradient(to right, #6a11cb, #2575fc); /* Фоновый градиент */
+          color: black;
+          padding: 10px 0;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+      }
+
+      /* Контейнер для заголовка и ссылок */
+      header .header-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between; /* Распределяем ссылки слева и справа */
+          position: relative;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 20px;
+          margin-top: 20px; /* Отступ сверху для всего контейнера */
+      }
+
+      /* Заголовок по центру */
+      header h1 {
+          position: absolute; /* Размещаем заголовок поверх */
+          left: 50%; /* Сдвигаем на середину */
+          transform: translateX(-50%); /* Центрируем по оси X */
+          margin: 0;
+          font-size: 36px;
+      }
+
+      /* Стили для ссылок */
+      header .left-links a,
+      header .right-links a {
+          color: black;
+          text-decoration: none;
+          font-size: 28px;
+          margin: 0 10px;
+      }
+
+      /* Дополнительный отступ для ссылок сверху */
+      header .left-links, header .right-links {
+          margin-top: 40px; /* Сдвигаем ссылки ниже на 40px */
+      }
+
+      h1 {
+          text-align: center;
+          margin-top: 40px;
+      }
+
+      p {
+          text-align: center;
+          margin-bottom: 40px;
+          font-size: 22px;
+          color: black;
+
+
+
+      }
+
+      /* Основной контейнер для карточек */
+      .services {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr); /* 5 колонок */
+          gap: 30px; /* Расстояние между карточками */
+          padding: 0 20px;
+          justify-items: center;
+          margin: 0 auto;
+          max-width: 1200px; /* Ограничение максимальной ширины */
+          margin-top: 20px; /* Отступ сверху */
+          flex-grow: 1; /* Это нужно, чтобы контейнер занимал всю оставшуюся высоту */
+          padding-bottom: 80px; /* Добавляем отступ снизу для компенсации */
+      }
+
+      /* Каждая карточка с услугой */
+      .service-card {
+          background-color: white;
+          padding: 20px;
+          text-align: center;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+          width: 100%;
+          max-width: 250px; /* Уменьшаем максимальную ширину */
+          transition: transform 0.3s ease;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          height: 330px; /* Уменьшаем высоту карточки */
+      }
+
+      /* Эффект наведения на карточку */
+      .service-card:hover {
+          transform: scale(1.05);
+      }
+
+      .service-card i {
+          font-size: 50px;
+          color: #2575fc;
+          margin-bottom: 20px;
+      }
+
+      .service-card h3 {
+          font-size: 20px;
+          margin-bottom: 10px;
+      }
+
+      .service-card p {
+          font-size: 14px;
+          margin-bottom: 20px;
+          flex-grow: 1;
+      }
+
+      .service-card button {
+          background-color: #2575fc;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          margin-top: 10px;
+      }
+
+      .service-card button:hover {
+          background-color: #1e66cc;
+      }
+
+      /* Мобильные стили */
+      @media (max-width: 768px) {
+          .services {
+              grid-template-columns: repeat(2, 1fr); /* Две колонки на экранах с шириной меньше 768px */
+              gap: 20px; /* Уменьшаем промежутки */
+          }
+      }
+
+      @media (max-width: 480px) {
+          .services {
+              grid-template-columns: 1fr; /* Одна колонка на очень маленьких экранах */
+          }
+
+          .service-card {
+              max-width: 200px;
+          }
+      }
+    </style>
+    <!-- Подключаем Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="left-links">
+                <a href="/profile">Profile</a>
+            </div>
+            <h1>Welcome to Your Dashboard</h1>
+            <div class="right-links">
+                <a href="/logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <p>Choose a service below to get started:</p>
+
+        <div class="services">
+            <div class="service-card">
+                <i class="fas fa-briefcase"></i> <!-- Иконка для генерации резюме -->
+                <h3>Resume Generator</h3>
+                <p>Generate a professional resume based on your data.</p>
+                <button onclick="window.location.href='/resume'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-image"></i> <!-- Иконка для генерации изображений -->
+                <h3>Vector Image Generator</h3>
+                <p>Create vector images for various purposes.</p>
+                <button onclick="window.location.href='/image-generation'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-user-circle"></i> <!-- Иконка для аватарок -->
+                <h3>Avatar Generator</h3>
+                <p>Create avatars in different styles.</p>
+                <button onclick="window.location.href='/avatar-generation'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-file-alt"></i> <!-- Иконка для генерации текста -->
+                <h3>Text Generator</h3>
+                <p>Generate articles, emails, and other texts.</p>
+                <button onclick="window.location.href='/text-generation'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-pencil-alt"></i> <!-- Иконка для корректуры -->
+                <h3>Text Correction</h3>
+                <p>Improve and proofread your texts.</p>
+                <button onclick="window.location.href='/text-correction'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-chart-line"></i> <!-- Иконка для бизнес-плана -->
+                <h3>Business Plan Generator</h3>
+                <p>Create business plans with AI assistance.</p>
+                <button onclick="window.location.href='/business-plan'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-lightbulb"></i> <!-- Иконка для идей стартапов -->
+                <h3>Startup Idea Generator</h3>
+                <p>Generate unique startup ideas based on trends.</p>
+                <button onclick="window.location.href='/startup-ideas'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-share-alt"></i> <!-- Иконка для постов -->
+                <h3>Social Media Posts</h3>
+                <p>Generate creative posts for social media.</p>
+                <button onclick="window.location.href='/social-media-posts'">Start</button>
+            </div>
+
+            <div class="service-card">
+                <i class="fas fa-camera-retro"></i> <!-- Иконка для ретуши фото -->
+                <h3>Photo Editing</h3>
+                <p>Retouch and stylize your photos.</p>
+                <button onclick="window.location.href='/photo-editing'">Start</button>
+            </div>
+            <div class="service-card">
+                <i class="fas fa-tag"></i> <!-- Иконка для описания товаров -->
+                <h3>Product Description Generator</h3>
+                <p>Create detailed product descriptions for e-commerce.</p>
+                <button onclick="window.location.href='/product-description'">Start</button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

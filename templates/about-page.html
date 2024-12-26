@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About NeuroHub</title>
+  <style>
+    /* Основной стиль для body */
+    body, html {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      margin: 0;
+      padding: 0;
+      color: #fff;
+      height: 100%; /* Устанавливаем 100% высоты для всей страницы */
+      width: 100%; /* Устанавливаем 100% ширины */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* Центрируем по вертикали с верхним выравниванием */
+      overflow-y: auto; /* Прокрутка по вертикали, если контент выходит за пределы */
+    }
+
+    /* Контейнер для контента */
+    .container {
+      width: 100%;
+      max-width: 800px; /* Устанавливаем максимальную ширину */
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+      min-height: 100vh; /* Задаем минимальную высоту для контейнера, чтобы занимал весь экран */
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start; /* Контент будет идти сверху */
+      box-sizing: border-box;
+      overflow: auto; /* Прокручиваемый контейнер при необходимости */
+    }
+
+    /* Заголовок */
+    h1 {
+      font-size: clamp(24px, 6vw, 48px); /* Ограничиваем размер шрифта для заголовка */
+      margin-bottom: 10px;
+      color: #fff;
+      text-align: center; /* Центрируем заголовок */
+    }
+
+    /* Подзаголовок */
+    p {
+      font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для подзаголовка */
+      margin-bottom: 30px;
+      color: #f1f1f1;
+      line-height: 1.6;
+    }
+
+    /* Стили для вкладок */
+    .tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      width: 100%; /* Контейнер вкладок растягивается на всю ширину */
+    }
+
+    .tab {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для вкладок */
+      transition: background-color 0.3s ease;
+      text-align: center; /* Центрируем текст внутри вкладки */
+    }
+
+    .tab:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .tab.active {
+      background-color: #ffc107;
+      color: #000;
+      font-weight: bold;
+    }
+
+    /* Темный фон для контента */
+    .content {
+      background-color: rgba(0, 0, 0, 0.7); /* Темный полупрозрачный фон */
+      color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для контента */
+      margin-top: 20px;
+      width: 100%; /* Контент растягивается по горизонтали */
+      display: none; /* Скрываем по умолчанию */
+      box-sizing: border-box;
+    }
+
+    .content.active {
+      display: block; /* Показываем при активации */
+    }
+
+    /* Стили для ссылок */
+    .extra-links {
+      margin-top: 20px;
+    }
+
+    .extra-links a {
+      color: #ff69b4;
+      text-decoration: none;
+    }
+
+    .extra-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* Адаптивность для экранов меньше 768px */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: clamp(24px, 8vw, 36px);
+      }
+
+      p {
+        font-size: clamp(14px, 6vw, 18px);
+      }
+
+      .tab {
+        font-size: clamp(14px, 6vw, 18px);
+      }
+
+      .content {
+        font-size: clamp(14px, 6vw, 18px);
+      }
+
+      .container {
+        padding: 15px; /* Уменьшаем отступы */
+      }
+    }
+
+    /* Адаптивность для экранов меньше 480px */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: clamp(24px, 10vw, 30px);
+      }
+
+      p {
+        font-size: clamp(14px, 8vw, 16px);
+      }
+
+      .tab {
+        font-size: clamp(14px, 8vw, 16px);
+      }
+
+      .content {
+        font-size: clamp(14px, 8vw, 16px);
+      }
+
+      button {
+        font-size: clamp(14px, 8vw, 16px);
+      }
+
+      .container {
+        padding: 10px; /* Еще меньше отступов */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>About NeuroHub</h1>
+
+    <div class="tabs">
+      <div class="tab active" id="history-tab">Our Story</div>
+      <div class="tab" id="contact-tab">Contact Us</div>
+      <div class="tab" id="technical-tab">Technical Details</div>
+    </div>
+
+    <div id="history-content" class="content active">
+      <h2>Our Story</h2>
+      <p>
+        In 2024, a team of passionate AI enthusiasts came together to create NeuroHub — a platform dedicated to bringing cutting-edge AI tools to everyone. From designers to entrepreneurs, we aim to empower users by providing them with powerful AI resources.<br /><br />
+        Our journey began with a simple question: "How can we make AI accessible to everyone and help users unleash their creativity and productivity?"<br /><br />
+        After months of collaboration, research, and fine-tuning, we launched NeuroHub — an all-in-one platform for generating AI-driven content, from personalized images to resumes, avatars, and more.<br /><br />
+        NeuroHub is not just a product — it’s a movement that brings the future closer. With a focus on accessibility and ease of use, we invite everyone to be part of the revolution in AI-driven creativity.
+      </p>
+    </div>
+
+    <div id="contact-content" class="content">
+      <h2>Contact Us</h2>
+      <p>If you have any questions or need assistance, feel free to reach out to us:</p>
+      <p><strong>Phone:</strong> 123-456-7890</p>
+      <p><strong>Telegram Bot:</strong> <a href="https://t.me/neurohubsupport_bot" target="_blank">@neurohubsupport_bot</a></p>
+    </div>
+
+    <div id="technical-content" class="content">
+      <h2>Technical Details</h2>
+      <p>
+        NeuroHub leverages the latest advancements in artificial intelligence to provide an array of creative tools. Our platform utilizes state-of-the-art models for text generation, image synthesis, and more.<br /><br />
+        We employ cutting-edge algorithms that have been trained on vast amounts of data, ensuring that the AI outputs are not only creative but also highly relevant. Whether you’re generating a professional resume, creating a unique avatar, or designing an image from scratch, NeuroHub’s AI models are built to deliver the best results.<br /><br />
+        The platform is powered by scalable cloud infrastructure to ensure fast processing times and seamless user experiences. We guarantee data privacy and security, and we do not store any user data after processing. Your privacy is our top priority.
+      </p>
+    </div>
+
+    <div class="extra-links">
+      <p>
+        <a href="/privacy-policy">Privacy Policy</a> | <a href="/terms-of-service">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("history-tab").addEventListener("click", function() {
+      setActiveTab("history");
+    });
+
+    document.getElementById("contact-tab").addEventListener("click", function() {
+      setActiveTab("contact");
+    });
+
+    document.getElementById("technical-tab").addEventListener("click", function() {
+      setActiveTab("technical");
+    });
+    function setActiveTab(tab) {
+      // Скрыть все вкладки и контенты
+      const tabs = document.querySelectorAll(".tab");
+      const contents = document.querySelectorAll(".content");
+
+      tabs.forEach((tabElement) => {
+        tabElement.classList.remove("active"); // Убираем активный класс у всех вкладок
+      });
+
+      contents.forEach((contentElement) => {
+        contentElement.classList.remove("active"); // Убираем активный класс у всех блоков контента
+      });
+
+      // Устанавливаем активный класс на выбранную вкладк у
+      document.getElementById(tab + "-tab").classList.add("active");
+
+      // Показываем контент соответствующей вкладки
+      document.getElementById(tab + "-content").classList.add("active");
+    }
+  </script>
+</body>
+</html>

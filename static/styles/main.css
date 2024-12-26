@@ -1,0 +1,261 @@
+/* Основной стиль для body */
+body, html {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to right, #6a11cb, #2575fc);
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  height: 100%; /* Устанавливаем 100% высоты для всей страницы */
+  width: 100%; /* Устанавливаем 100% ширины */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto; /* Добавляем прокрутку, если контент выходит за пределы */
+}
+
+/* Контейнер для контента */
+.container {
+  width: 100%;
+  max-width: 800px; /* Устанавливаем максимальную ширину */
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  min-height: 100vh; /* Задаем минимальную высоту для контейнера, чтобы занимал весь экран */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: auto; /* Прокручиваемый контейнер при необходимости */
+}
+
+/* Заголовок */
+h1 {
+  font-size: clamp(24px, 6vw, 48px); /* Ограничиваем размер шрифта для заголовка */
+  margin-bottom: 10px;
+  color: #fff;
+  text-align: center; /* Центрируем заголовок */
+}
+
+/* Подзаголовок */
+p {
+  font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для подзаголовка */
+  margin-bottom: 30px;
+  color: #f1f1f1;
+  line-height: 1.6;
+}
+
+/* Стили для вкладок */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  width: 100%; /* Контейнер вкладок растягивается на всю ширину */
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для вкладок */
+  transition: background-color 0.3s ease;
+  text-align: center; /* Центрируем текст внутри вкладки */
+}
+
+.tab:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab.active {
+  background-color: #ffc107;
+  color: #000;
+  font-weight: bold;
+}
+
+/* Темный фон для контента */
+.content {
+  background-color: rgba(0, 0, 0, 0.7); /* Темный полупрозрачный фон */
+  color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для контента */
+  margin-top: 20px;
+  width: 100%; /* Контент растягивается по горизонтали */
+  display: none; /* Скрываем по умолчанию */
+  box-sizing: border-box;
+}
+
+.content.active {
+  display: block; /* Показываем при активации */
+}
+
+/* Стили для формы */
+form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: clamp(12px, 2.5vw, 16px); /* Ограничиваем размер шрифта для меток */
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: clamp(12px, 2.5vw, 16px); /* Ограничиваем размер шрифта для полей ввода */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 5px;
+}
+
+button {
+  background-color: #ffc107;
+  color: #000;
+  padding: 15px 30px;
+  font-size: clamp(14px, 3vw, 18px); /* Ограничиваем размер шрифта для кнопки */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #e0a800;
+}
+
+/* Стили для ссылок */
+.extra-links {
+  margin-top: 20px;
+}
+
+.extra-links a {
+  color: #ffc107;
+  text-decoration: none;
+}
+
+.extra-links a:hover {
+  text-decoration: underline;
+}
+
+/* Адаптивность для экранов меньше 768px */
+@media (max-width: 768px) {
+  h1 {
+    font-size: clamp(24px, 8vw, 36px);
+  }
+
+  p {
+    font-size: clamp(14px, 6vw, 18px);
+  }
+
+  .tab {
+    font-size: clamp(14px, 6vw, 18px);
+  }
+
+  .content {
+    font-size: clamp(14px, 6vw, 18px);
+  }
+
+  button {
+    font-size: clamp(14px, 6vw, 18px);
+  }
+
+  .container {
+    padding: 15px; /* Уменьшаем отступы */
+  }
+}
+
+/* Адаптивность для экранов меньше 480px */
+@media (max-width: 480px) {
+  h1 {
+    font-size: clamp(24px, 10vw, 30px);
+  }
+
+  p {
+    font-size: clamp(14px, 8vw, 16px);
+  }
+
+  .tab {
+    font-size: clamp(14px, 8vw, 16px);
+  }
+
+  .content {
+    font-size: clamp(14px, 8vw, 16px);
+  }
+
+  button {
+    font-size: clamp(14px, 8vw, 16px);
+  }
+
+  .container {
+    padding: 10px; /* Еще меньше отступов */
+  }
+}
+/* Стили для ссылок на главной странице (О нас и Политика конфиденциальности) */
+.extra-links {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.extra-links a {
+  color: #ff69b4;  /* Цвет ссылок */
+  font-size: 1.1rem;
+  text-decoration: none;  /* Убираем стандартное подчеркивание */
+  margin: 0 15px;  /* Отступы между ссылками */
+  padding: 5px 0;
+  transition: all 0.3s ease;  /* Плавный переход для эффектов */
+}
+
+.extra-links a:hover {
+  color: #0056b3;  /* Темный цвет при наведении */
+  text-decoration: underline;  /* Подчеркивание при наведении */
+  transform: scale(1.1);  /* Легкое увеличение при наведении */
+}
+
+/* Для мобильных устройств добавим немного отступов */
+@media (max-width: 768px) {
+  .extra-links {
+    margin-top: 20px;
+  }
+
+  .extra-links a {
+    font-size: 1rem;
+    margin: 0 10px;  /* Уменьшаем отступы на мобильных устройствах */
+  }
+}
+.key {
+    color: #ff69b4;  /* Розовый цвет для ключей */
+    font-weight: bold;
+    font-size: 18px;
+}
+.label {
+    color: black;  /* Черный цвет для текста метки */
+    font-weight: bold; /* Жирный шрифт */
+    font-size: 30px;
+}
+.warning {
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    color: #ff4d4d;
+    font-size: 36px;
+}
+.warning h3 {
+    margin: 0;
+    font-weight: bold;
+}
+
+a {
+    display: inline-block;
+    margin-top: 20px;
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
