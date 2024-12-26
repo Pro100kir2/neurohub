@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 import random
 import string
+from functools import wraps
+import traceback
 
 # Flask приложение
 app = Flask(__name__)
@@ -92,7 +94,32 @@ def refresh_token(token):
     except jwt.InvalidTokenError:
         return None
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get('token')
 
+        if not token:
+            print("No token found in cookies.")
+            return redirect(url_for('login'))  # Перенаправляем на страницу входа, если токен отсутствует
+
+        try:
+            # Декодируем токен без проверки на срок действия
+            user_data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_exp": False})
+            token_exp_time = datetime.datetime.fromtimestamp(user_data['exp'], tz=datetime.timezone.utc)
+
+            # Проверяем истек ли токен
+            if datetime.datetime.now(datetime.timezone.utc) > token_exp_time:
+                print("Token expired.")
+                return redirect(url_for('login'))  # Перенаправляем на страницу входа, если токен истек
+
+        except jwt.InvalidTokenError:
+            print("Invalid token.")
+            return redirect(url_for('login'))  # Перенаправляем на страницу входа, если токен недействителен
+
+        return f(*args, **kwargs)
+
+    return decorated_function
 # Главная страница
 @app.route('/')
 def home():
@@ -142,8 +169,6 @@ def register():
         finally:
             if conn:
                 conn.close()
-
-# Вход пользователя
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -179,32 +204,38 @@ def login():
                     'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
                 }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-                print(f"Generated token: {token}")  # Логируем токен при входе
+                # Логируем создание токена
+                print(f"Generated token: {token}")
 
-                # Сохраняем токен в cookies
-                response = redirect(url_for('profile'))
-                response.set_cookie('token', token)
+                # Устанавливаем cookie с токеном
+                response = redirect(url_for('profile'))  # Переход на страницу профиля после логина
 
-                return jsonify({
-                    'message': 'Вход выполнен успешно!',
-                    'token': token
-                }), 200
+                # Устанавливаем токен в cookie
+                response.set_cookie('token', token, httponly=True, secure=False, samesite='Strict', max_age=3600)  # max_age = 3600 сек = 1 час
+
+                return response  # Редирект на профиль с установленным токеном в куки
             else:
                 return jsonify({'message': 'Неверное имя или публичный ключ.'}), 401
+
         except Exception as e:
+            # Логируем ошибку
+            print(f"Ошибка при входе: {str(e)}")
             return jsonify({'message': f'Ошибка при входе: {str(e)}'}), 500
+
         finally:
             if conn:
                 conn.close()
+
 # Профиль
 @app.route('/profile')
+@login_required
 def profile():
     token = request.cookies.get('token')
+    print(f"Received token: {token}")  # Логируем токен, полученный из cookies
 
     if not token:
-        print("No token found in cookies")  # Логируем, если токен отсутствует
+        print("No token found in cookies")
         return redirect(url_for('login'))  # Перенаправляем на страницу входа, если токен отсутствует
-
     try:
         user_data = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM], options={"verify_exp": False})
         print(f"User data from token: {user_data}")  # Логируем декодированные данные токена
@@ -264,6 +295,7 @@ def logout():
     response.delete_cookie('token')  # Удаляем cookie с токеном
     return response
 @app.route('/neuro')
+@login_required
 def neuro():
     return render_template('home-profile.html')
 

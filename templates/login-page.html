@@ -57,13 +57,13 @@
           body: JSON.stringify(data),
         });
 
-        const result = await response.json();
         if (response.ok) {
-          alert('Вход выполнен успешно: ' + result.message);
-          // Редирект на страницу профиля или другое действие
+          // Если вход успешен, редирект на страницу профиля
           window.location.href = '/profile';
         } else {
-          alert('Ошибка: ' + result.message);
+          // Если ошибка, показываем alert
+          const errorData = await response.json();
+          alert('Ошибка: ' + errorData.message);
         }
       } catch (err) {
         console.error('Ошибка:', err);
