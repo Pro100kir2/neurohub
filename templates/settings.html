@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: black;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        .nav-links {
+            margin-top: 10px;
+        }
+
+        .nav-links a {
+            color: #ff69b4;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+
+        .settings-container {
+            margin-top: 20px;
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-group .warning {
+            font-size: 12px;
+            color: red;
+            margin-top: 5px;
+        }
+
+        .submit-button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background-color: #1e66cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Account Settings</h1>
+        <div class="nav-links">
+            <a href="/profile">Profile</a>
+        </div>
+    </div>
+
+    <div class="settings-container">
+        <h2>Update Your Information</h2>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" placeholder="Enter your name" />
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="Enter your email" />
+        </div>
+
+        <div class="form-group">
+            <label for="public-key">Public Key (Changing is not recommended)</label>
+            <input type="text" id="public-key" placeholder="Enter your public key" />
+            <div class="warning">Changing this key is not recommended!</div>
+        </div>
+
+        <div class="form-group">
+            <label for="private-key">Private Key </label>
+            <input type="password" id="private-key" placeholder="Enter your private key" />
+        </div>
+
+        <button class="submit-button" onclick="updateSettings()">Update Settings</button>
+    </div>
+
+    <script>
+        async function updateSettings() {
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const publicKey = document.getElementById('public-key').value.trim();
+            const privateKey = document.getElementById('private-key').value.trim();
+
+            // Формируем данные для отправки
+            const payload = {
+                name: name || null,  // Если поле пустое, отправляем null
+                email: email || null,
+                public_key: publicKey || null,
+                private_key: privateKey
+            };
+
+            // Проверка, что приватный ключ введен
+            if (!privateKey) {
+                alert("Private key is required.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/update-settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message);
+                    location.reload(); // Обновляем страницу после успешного изменения
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error updating settings:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

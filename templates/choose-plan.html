@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing Plans</title>
+    <style>
+        /* Стиль для страницы тарифов */
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin: 0;
+        }
+
+        .header .nav-links {
+            margin-top: 10px;
+        }
+
+        .header .nav-links a {
+            color: #ff69b4;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+        }
+
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .pricing-card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            transform: scale(1.05);
+        }
+
+        .pricing-card h3 {
+            font-size: 24px;
+            color: #2575fc;
+        }
+
+        .pricing-card p {
+            font-size: 18px;
+        }
+
+        .pricing-card button {
+            background-color: #ff69b4;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+
+        .pricing-card button:hover {
+            background-color: #1e66cc;
+        }
+
+        @media (max-width: 768px) {
+            .pricing-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pricing-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Choose Your Plan</h1>
+        <div class="nav-links">
+            <a href="/profile">Profile</a>
+            <a href="/settings">Settings</a>
+        </div>
+    </div>
+
+    <div class="pricing-cards">
+        <div class="pricing-card">
+            <h3>Free Plan</h3>
+            <p>10 requests per day</p>
+            <p>Access to 1 neural network</p>
+            <button onclick="window.location.href='/subscribe/free'">Pay</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3>Basic Plan</h3>
+            <p>100 requests per month</p>
+            <p>Access to all neural networks</p>
+            <p>Cost: 199 RUB/month</p>
+            <button onclick="window.location.href='/subscribe/basic'">Pay</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3>Standard Plan</h3>
+            <p>500 requests per month</p>
+            <p>Access to all neural networks</p>
+            <p>Cost: 499 RUB/month</p>
+            <button onclick="window.location.href='/subscribe/standard'">Pay</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3>Premium Plan</h3>
+            <p>1000 requests per month</p>
+            <p>Access to all neural networks with priority processing</p>
+            <p>Cost: 899 RUB/month</p>
+            <button onclick="window.location.href='/subscribe/premium'">Pay</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3>Pro Plan</h3>
+            <p>3000 requests per month</p>
+            <p>Access to all neural networks with priority processing</p>
+            <p>Support for up to 5 users</p>
+            <p>Cost: 2499 RUB/month</p>
+            <button onclick="window.location.href='/subscribe/pro'">Pay</button>
+        </div>
+
+        <div class="pricing-card">
+            <h3>Developer Plan</h3>
+            <p>8000 requests per month</p>
+            <p>Access to all neural networks with priority processing</p>
+            <p>Support for up to 10 users</p>
+            <p>Cost: 6500 RUB/month</p>
+            <button onclick="window.location.href='/subscribe/developer'">Pay</button>
+        </div>
+    </div>
+</body>
+</html>

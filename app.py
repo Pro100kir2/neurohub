@@ -61,21 +61,6 @@ def generate_key(length: int) -> str:
     # Генерация ключа заданной длины
     return ''.join(random.choice(allowed_chars) for _ in range(length))
 
-
-def get_user_from_db(user_id):
-    # Пример выполнения запроса к базе данных
-    query = "SELECT name, gmail, plan FROM users WHERE id = %s"
-    cursor.execute(query, (user_id,))
-    result = cursor.fetchone()
-    if result:
-        return {
-            'name': result[0],
-            'gmail': result[1],
-            'plan': result[2]
-        }
-    return None
-
-
 def refresh_token(token):
     try:
         # Декодируем старый токен без проверки на срок действия
@@ -280,7 +265,9 @@ def about():
 @app.route('/privacy-policy')
 def privacy_policy():
     return render_template('PrivacyPolicyPage.js')
-
+@app.route('/choose-plan')
+def choose_plan():
+    return render_template('choose-plan.html')
 
 # Обработчик 404 ошибки
 @app.errorhandler(404)
@@ -298,6 +285,120 @@ def logout():
 @login_required
 def neuro():
     return render_template('home-profile.html')
+@app.route('/settings')
+@login_required
+def settings():
+    return render_template('settings.html')
+
+
+# Укажите параметры подключения к базе данных PostgreSQL
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    # Разбираем строку подключения
+    url = urlparse(DATABASE_URL)
+
+    DB_CONFIG = {
+        'dbname': url.path[1:],  # Все после первого слэша
+        'user': url.username,
+        'password': url.password,
+        'host': url.hostname,
+        'port': url.port,}
+
+@app.route('/update-settings', methods=['POST'])
+def update_settings():
+    print("Received a request to update settings.")  # Логируем начало обработки запроса
+
+    # Проверка, что запрос содержит тело в формате JSON
+    if request.is_json:
+        data = request.get_json()
+        print("Request body received as JSON.")  # Логируем, что тело запроса в формате JSON
+
+        # Извлекаем значения из данных
+        name = data.get('name')
+        email = data.get('email')
+        public_key = data.get('public_key')
+        private_key = data.get('private_key')
+
+        print(f"Extracted data: Name: {name}, Email: {email}, Public Key: {public_key}, Private Key: {private_key}")
+
+        # Логика проверки и сохранения данных
+        if not private_key:
+            print("Private key is missing!")  # Логируем отсутствие приватного ключа
+            return jsonify({'message': 'Private key is required.'}), 400
+
+        # Логируем каждый шаг при обновлении данных в базе
+        print("Attempting to update user data in the database...")
+
+        # Например, если передаем только непустые значения, обновляем только их:
+        if name:
+            print(f"Updating name to: {name}")
+        if email:
+            print(f"Updating email to: {email}")
+        if public_key:
+            print(f"Updating public key to: {public_key}")
+        if private_key:
+            print(f"Updating private key to: {private_key}")
+
+        # Пример обновления данных в базе
+        user_id = 86  # Пример ID пользователя, его можно получить из токена или сессии
+        success = update_user_in_db(user_id, name, email, public_key, private_key)
+
+        if success:
+            print("User data successfully updated in the database.")  # Логируем успешное обновление
+            return jsonify({'message': 'Settings updated successfully!'}), 200
+        else:
+            print("Failed to update user data in the database.")  # Логируем неудачную попытку обновления
+            return jsonify({'message': 'Failed to update settings'}), 500
+    else:
+        print("Request body is not in JSON format!")  # Логируем, что тело запроса не JSON
+        return jsonify({'message': 'Request must be in JSON format'}), 400
+
+
+def update_user_in_db(user_id, name, email, public_key, private_key):
+    try:
+        # Подключаемся к базе данных
+        connection = psycopg2.connect(**DB_CONFIG)
+        cursor = connection.cursor()
+
+        # Получаем текущие значения полей
+        cursor.execute("SELECT name, email, public_key, private_key FROM public.user WHERE id = %s", (user_id,))
+        current_data = cursor.fetchone()
+        current_name, current_email, current_public_key, current_private_key = current_data
+
+        # Если поля не переданы, оставляем их как есть
+        if name is None:
+            name = current_name
+        if email is None:
+            email = current_email
+        if public_key is None:
+            public_key = current_public_key
+        if private_key is None:
+            private_key = current_private_key
+
+        # Формируем SQL-запрос для обновления данных
+        update_query = """
+            UPDATE "public"."user"
+            SET name = %s, email = %s, public_key = %s, private_key = %s
+            WHERE id = %s
+        """
+
+        # Логируем запрос
+        print(f"Executing query: {update_query}")
+        cursor.execute(update_query, (name, email, public_key, private_key, user_id))
+
+        # Сохраняем изменения в базе
+        connection.commit()
+        print("Changes committed to the database.")
+
+        # Закрываем соединение
+        cursor.close()
+        connection.close()
+
+        return True
+    except Exception as e:
+        print(f"Error updating database: {e}")
+        return False
 
 # Запуск приложения
 if __name__ == '__main__':
