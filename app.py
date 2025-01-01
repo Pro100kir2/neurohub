@@ -9,6 +9,7 @@ import random
 import string
 from functools import wraps
 import traceback
+import hashlib
 
 # Flask приложение
 app = Flask(__name__)
@@ -264,7 +265,7 @@ def about():
 
 @app.route('/privacy-policy')
 def privacy_policy():
-    return render_template('PrivacyPolicyPage.js')
+    return render_template('privacy-policy-page.html')
 @app.route('/choose-plan')
 def choose_plan():
     return render_template('choose-plan.html')
@@ -272,8 +273,11 @@ def choose_plan():
 # Обработчик 404 ошибки
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('NotFoundPage.js'), 404
+    return render_template('error404.html'), 404
 
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('error500.html'), 500
 
 # Логика выхода
 @app.route('/logout')
@@ -399,6 +403,126 @@ def update_user_in_db(user_id, name, email, public_key, private_key):
     except Exception as e:
         print(f"Error updating database: {e}")
         return False
+@app.route('/choose-plan/payment-success', methods=['GET'])
+def payment_success():
+    # Имитация успешной оплаты
+    user_id = session.get('user_id')  # Получаем ID пользователя из сессии
+    plan = request.args.get('plan')  # Получаем оплаченный тариф из параметров URL
+
+    if not user_id or not plan:
+        return jsonify({'message': 'Необходима авторизация и указание плана.'}), 400
+
+    # Привилегии для каждого тарифа
+    plan_privileges = {
+        "Free": [
+            "10 запросов в день",
+            "Доступ к 1 нейросети"
+        ],
+        "Basic": [
+            "100 запросов в месяц",
+            "Доступ ко всем нейросетям"
+        ],
+        "Standard": [
+            "500 запросов в месяц",
+            "Доступ ко всем нейросетям"
+        ],
+        "Premium": [
+            "1000 запросов в месяц",
+            "Доступ ко всем нейросетям с приоритетной обработкой"
+        ],
+        "Pro": [
+            "3000 запросов в месяц",
+            "Доступ ко всем нейросетям с приоритетной обработкой",
+            "Поддержка до 5 пользователей"
+        ],
+        "Developer": [
+            "8000 запросов в месяц",
+            "Доступ ко всем нейросетям с приоритетной обработкой",
+            "Поддержка до 10 пользователей"
+        ]
+    }
+
+    if plan not in plan_privileges:
+        return jsonify({'message': 'Неверный тарифный план.'}), 400
+
+    conn = None
+    try:
+        # Обновление тарифа пользователя в базе данных
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE public.user SET plan = %s WHERE id = %s", (plan, user_id))
+        conn.commit()
+
+        privileges = plan_privileges[plan]  # Получаем привилегии нового тарифа
+        return render_template('payment-success.html', plan=plan, privileges=privileges)
+    except Exception as e:
+        return jsonify({'message': f'Ошибка при обновлении тарифа: {str(e)}'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+def validate_notification(notification_data, secret_key):
+    # Создайте строку для подписи
+    str_to_hash = f"{notification_data['notification_type']}&{notification_data['operation_id']}&" \
+                  f"{notification_data['amount']}&{notification_data['currency']}&" \
+                  f"{notification_data['datetime']}&{notification_data['sender']}&" \
+                  f"{notification_data['codepro']}&{secret_key}&{notification_data['label']}"
+    # Вычислите sha1-хэш
+    computed_hash = hashlib.sha1(str_to_hash.encode('utf-8')).hexdigest()
+
+    # Сравните с `sha1_hash` из уведомления
+    return computed_hash == notification_data['sha1_hash']
+
+def determine_plan_based_on_amount(amount):
+    plans = {
+        0: "Free",          # Бесплатный тариф
+        100: "Basic",       # 100 рублей
+        500: "Standard",    # 500 рублей
+        1000: "Premium",    # 1000 рублей
+        3000: "Pro",        # 3000 рублей
+        8000: "Developer"   # 8000 рублей
+    }
+    # Найдите ближайший соответствующий тариф по сумме
+    return plans.get(int(amount), "Free")  # По умолчанию "Free", если сумма не соответствует
+
+@app.route('/payment-notification', methods=['POST'])
+def payment_notification():
+    try:
+        # Получение данных из запроса
+        notification_data = request.json  # YooMoney отправляет данные в формате JSON
+
+        # Получите секретный ключ из настроек
+        secret_key = os.getenv('YOOMONEY_SECRET_KEY')
+
+        # Проверка подписи уведомления
+        if not validate_notification(notification_data, secret_key):
+            return jsonify({'message': 'Подпись уведомления недействительна.'}), 403
+
+        # Обработка успешной оплаты
+        if notification_data.get('unaccepted', 'true') == 'false':  # unaccepted == 'false' означает успешную оплату
+            # Получение метки (label), связанной с оплатой
+            user_id = notification_data.get('label')  # Вы указывали label при создании платежа как user_id
+            amount = notification_data.get('amount')  # Сумма платежа
+            plan = determine_plan_based_on_amount(float(amount))  # Определяем тариф по сумме
+
+            conn = get_db_connection()
+            cur = conn.cursor()
+
+            # Обновляем тариф пользователя
+            cur.execute("UPDATE public.user SET plan = %s WHERE id = %s", (plan, user_id))
+            conn.commit()
+
+            cur.close()
+            conn.close()
+
+            return jsonify({'message': 'Платеж успешно обработан.', 'plan': plan}), 200
+
+        # Если платеж не подтвержден
+        return jsonify({'message': 'Платеж не подтвержден.'}), 400
+
+    except Exception as e:
+        print(f"Ошибка при обработке уведомления: {e}")
+        return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
 
 # Запуск приложения
 if __name__ == '__main__':

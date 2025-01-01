@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Успешная оплата</title>
+  <style>
+    /* Основные стили */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: #333;
+}
+
+/* Стили для контейнеров */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Стили заголовков */
+h1, h2, h3 {
+    margin: 20px 0;
+    color: #222;
+    text-align: center;
+}
+
+/* Стили для кнопок */
+button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Стили для ссылок */
+a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+/* Стили для страницы успешной оплаты */
+.payment-success-page {
+    text-align: center;
+    margin: 50px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.payment-success-page h1 {
+    color: #28a745;
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+.payment-success-page p {
+    margin: 10px 0;
+    font-size: 18px;
+    color: #555;
+}
+
+.payment-success-page ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.payment-success-page li {
+    margin: 10px 0;
+    font-size: 16px;
+    color: #444;
+}
+
+.payment-success-page button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.payment-success-page button:hover {
+    background-color: #0056b3;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .payment-success-page {
+        padding: 15px;
+        margin: 20px;
+    }
+
+    .payment-success-page h1 {
+        font-size: 24px;
+    }
+
+    .payment-success-page p,
+    .payment-success-page li {
+        font-size: 14px;
+    }
+
+    .payment-success-page button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+}
+  </style>
+</head>
+<body>
+  <div class="payment-success-page">
+    <div class="container">
+    <h1>Поздравляем с успешной покупкой!</h1>
+    <p>Ваш новый тариф: <strong>{{ plan }}</strong></p>
+    <p>Привилегии тарифа:</p>
+    <ul>
+      {% for privilege in privileges %}
+        <li>{{ privilege }}</li>
+      {% endfor %}
+    </ul>
+    <button onclick="window.location.href='/profile-page.html'">Назад в профиль</button>
+      </div>
+  </div>
+</body>
+</html>
