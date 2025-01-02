@@ -45,14 +45,9 @@ else:
 JWT_SECRET = os.getenv('JWT_SECRET', 'your_jwt_secret_key')
 JWT_ALGORITHM = 'HS256'
 
-# Путь к папке с фронтендом
-FRONTEND_TEMPLATES_PATH = '/neurohub-backend/templates/pages'
-
-
 # Подключение к базе данных
 def get_db_connection():
     return psycopg2.connect(**DB_CONFIG)
-
 
 # Функция для генерации случайного ключа с учетом требований
 def generate_key(length: int) -> str:
@@ -334,18 +329,17 @@ def update_settings():
         # Логируем каждый шаг при обновлении данных в базе
         print("Attempting to update user data in the database...")
 
-        # Например, если передаем только непустые значения, обновляем только их:
-        if name:
-            print(f"Updating name to: {name}")
-        if email:
-            print(f"Updating email to: {email}")
-        if public_key:
-            print(f"Updating public key to: {public_key}")
-        if private_key:
-            print(f"Updating private key to: {private_key}")
+        # Получение ID пользователя из базы данных по email (или другому уникальному полю)
+        try:
+            user_id = get_user_id_by_email(email)
+            if not user_id:
+                print(f"User with email {email} not found.")  # Логируем, если пользователь не найден
+                return jsonify({'message': 'User not found'}), 404
+        except Exception as e:
+            print(f"Error retrieving user ID: {e}")
+            return jsonify({'message': 'Error retrieving user ID'}), 500
 
         # Пример обновления данных в базе
-        user_id = 86  # Пример ID пользователя, его можно получить из токена или сессии
         success = update_user_in_db(user_id, name, email, public_key, private_key)
 
         if success:
@@ -359,6 +353,29 @@ def update_settings():
         return jsonify({'message': 'Request must be in JSON format'}), 400
 
 
+def get_user_id_by_email(email):
+    try:
+        # Подключаемся к базе данных
+        connection = psycopg2.connect(**DB_CONFIG)
+        cursor = connection.cursor()
+
+        # Получаем ID пользователя по email
+        cursor.execute("SELECT id FROM public.user WHERE email = %s", (email,))
+        user_data = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+
+        # Если пользователь найден, возвращаем его ID
+        if user_data:
+            return user_data[0]
+        else:
+            return None
+    except Exception as e:
+        print(f"Error retrieving user ID by email: {e}")
+        return None
+
+
 def update_user_in_db(user_id, name, email, public_key, private_key):
     try:
         # Подключаемся к базе данных
@@ -368,6 +385,9 @@ def update_user_in_db(user_id, name, email, public_key, private_key):
         # Получаем текущие значения полей
         cursor.execute("SELECT name, email, public_key, private_key FROM public.user WHERE id = %s", (user_id,))
         current_data = cursor.fetchone()
+        if not current_data:
+            print(f"User with ID {user_id} not found.")
+            return False
         current_name, current_email, current_public_key, current_private_key = current_data
 
         # Если поля не переданы, оставляем их как есть
@@ -403,6 +423,7 @@ def update_user_in_db(user_id, name, email, public_key, private_key):
     except Exception as e:
         print(f"Error updating database: {e}")
         return False
+
 @app.route('/choose-plan/payment-success', methods=['GET'])
 def payment_success():
     # Имитация успешной оплаты
