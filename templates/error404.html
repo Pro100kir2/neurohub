@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Page Not Found </title>
+    <link rel="icon" href="/static/images/Group_46.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/static/images/Group_46.png" sizes="16x16" type="image/png">
+
+
+    <link rel="apple-touch-icon" href="/static/images/Group_46.png" sizes="180x180">
+    <link rel="icon" href="/static/images/Group_46.png" sizes="192x192" type="image/png">
+    <link rel="icon" href="/static/images/Group_46.png" sizes="512x512" type="image/png">
+
+  <!-- Иконка для Windows (neuro-icon.ico) -->
+    <link rel="shortcut icon" href="/static/images/Group_46.png" type="image/png">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url('/static/images/404.png');
+            background-size: contain; /* Сохраняем пропорции изображения */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: white;
+            text-align: center;
+            position: relative;
+            background-color: black; /* Добавлен фон для пустых областей */
+        }
+        .container {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        .btn-back {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            background-color: #e64a19;
+        }
+    </style>
+</head>
+<body>
+
+<a href="javascript:history.back()" class="btn-back">Go Back</a>
+
+</body>
+</html>

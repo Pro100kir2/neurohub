@@ -1,162 +1,201 @@
 import unittest
+from flask import Flask, jsonify
+from flask_testing import TestCase
+import psycopg2
+import jwt
+import datetime
+import os
+from io import StringIO
+from unittest.mock import patch
 import time
-import secrets
-from app import app, db, User
+import requests
 
-class TestNeuroHubAPI(unittest.TestCase):
+
+# Подключаем ваше приложение (например, app.py)
+from app import app, get_db_connection, JWT_SECRET, JWT_ALGORITHM, DB_CONFIG
+
+
+class TestNeuroHubApp(TestCase):
+
+    def create_app(self):
+        # Настроим тестовую среду
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = DB_CONFIG['dbname']
+        return app
 
     def setUp(self):
-        """Настройка перед каждым тестом"""
-        self.app = app.test_client()
-        self.app.testing = True
-
-        # Очистка базы данных перед тестами
-        with app.app_context():
-            db.session.query(User).delete()
-            db.session.commit()
-
-            # Генерация публичных и приватных ключей для пользователя
-            private_key = secrets.token_hex(24)  # Пример генерации 24-байтного приватного ключа
-            public_key = secrets.token_hex(12)  # Пример генерации 12-байтного публичного ключа
-
-            # Добавление пользователя в базу данных
-            user = User(
-                email="testuser@gmail.com",
-                name="testuser",
-                private_key=private_key,
-                public_key=public_key,
-                plan="free"
+        """ Set up the database and any necessary resources """
+        self.conn = get_db_connection()
+        self.cur = self.conn.cursor()
+        # Создание тестовой таблицы или очистка базы данных
+        self.cur.execute("""
+            CREATE TABLE IF NOT EXISTS public.user (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE,
+                name TEXT,
+                public_key TEXT,
+                private_key TEXT,
+                plan TEXT
             )
-            db.session.add(user)
-            db.session.commit()
+        """)
+        self.conn.commit()
 
     def tearDown(self):
-        """Очистка после каждого теста"""
-        with app.app_context():
-            db.session.query(User).delete()
-            db.session.commit()
+        """ Clean up after each test """
+        self.cur.execute("DROP TABLE IF EXISTS public.user")
+        self.conn.commit()
+        self.cur.close()
+        self.conn.close()
 
-    def test_register(self):
-        """Тест регистрации пользователя"""
-        data = {
-            "email": "newuser@example.com",
-            "password": "securepassword",
-            "name": "New User",
-            "private_key": "private_key_example",
-            "public_key": "public_key_example"
-        }
-        response = self.app.post('/register', json=data)
-        self.assertEqual(response.status_code, 201)
-        self.assertIn('Регистрация прошла успешно!', response.get_json()['message'])
+    # Проверка подключения к базе данных
+    def test_db_connection(self):
+        try:
+            conn = get_db_connection()
+            self.assertIsNotNone(conn)
+        except Exception as e:
+            self.fail(f"Database connection failed: {str(e)}")
 
-    def test_register_invalid_email(self):
-        """Тест регистрации с неверным email"""
-        data = {
-            "email": "invalid-email",
-            "password": "securepassword",
-            "name": "Test User",
-            "private_key": "private_key_example",
-            "public_key": "public_key_example"
-        }
-        response = self.app.post('/register', json=data)
+    # Регистрация пользователя
+    def test_register_user(self):
+        with self.client:
+            response = self.client.post('/register', data=dict(
+                email='test@example.com',
+                name='Test User'
+            ))
+            self.assertEqual(response.status_code, 200)
+
+    def test_register_existing_user(self):
+        # Сначала зарегистрируем пользователя
+        self.client.post('/register', data=dict(
+            email='test@example.com',
+            name='Test User'
+        ))
+
+        # Попробуем зарегистрировать с тем же email
+        response = self.client.post('/register', data=dict(
+            email='test@example.com',
+            name='Another User'
+        ))
         self.assertEqual(response.status_code, 400)
-        self.assertIn('Некорректный email', response.get_json()['message'])
+        response_data = response.get_json()
+        self.assertEqual(response_data['message'], 'Пользователь с таким email уже существует.')
 
-    def test_register_short_password(self):
-        """Тест регистрации с коротким паролем"""
-        data = {
-            "email": "newuser@example.com",
-            "password": "short",
-            "name": "Test User",
-            "private_key": "private_key_example",
-            "public_key": "public_key_example"
-        }
-        response = self.app.post('/register', json=data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('Пароль слишком короткий', response.get_json()['message'])
+    # Проверка защиты от SQL инъекций
+    def test_sql_injection(self):
+        malicious_email = "' OR 1=1 --"
+        response = self.client.post('/register', data=dict(
+            email=malicious_email,
+            name='Test User'
+        ))
+        self.assertEqual(response.status_code, 400)  # Должен быть отказ из-за инъекции
 
-    def test_login(self):
-        # Отправляем корректные данные
-        data = {'name': 'Test User', 'public_key': 'valid_public_key'}
-        response = self.client.post('/login', json=data)
+    # Проверка защиты от XSS
+    def test_xss_protection(self):
+        malicious_script = "<script>alert('xss');</script>"
+        response = self.client.post('/register', data=dict(
+            email='xss@example.com',
+            name=malicious_script
+        ))
+        self.assertNotIn(malicious_script, response.data.decode())  # Данные не должны быть выполнены
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('token', response.get_json())
-        self.assertIn('plan', response.get_json())
+    # Проверка работы с токенами
+    def test_create_token(self):
+        token = jwt.encode({
+            'id': 1,
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'plan': 'free',
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        self.assertIsNotNone(token)
 
-    def test_login_invalid_credentials(self):
-        # Отправляем неправильный public_key для существующего имени
-        data = {'name': 'Test User', 'public_key': 'wrong_public_key'}
-        response = self.client.post('/login', json=data)
+    def test_token_expiration(self):
+        token = jwt.encode({
+            'id': 1,
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'plan': 'free',
+            'exp': datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=1)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-        self.assertEqual(response.status_code, 401)
-        self.assertIn('Неверные данные', response.get_json()['message'])
+        with self.assertRaises(jwt.ExpiredSignatureError):
+            jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
 
-    def test_login_non_existent_user(self):
-        # Отправляем запрос с несуществующим пользователем
-        data = {'name': 'Nonexistent User', 'public_key': 'some_public_key'}
-        response = self.client.post('/login', json=data)
+    def test_token_refresh(self):
+        token = jwt.encode({
+            'id': 1,
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'plan': 'free',
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    # Проверка кэширования
+    def test_cache(self):
+        response1 = self.client.get('/some-expensive-query')
+        response2 = self.client.get('/some-expensive-query')
+        self.assertEqual(response1.data, response2.data)  # Результаты должны совпасть, если кэш работает
 
-        self.assertEqual(response.status_code, 401)
-        self.assertIn('Пользователь с таким именем не найден', response.get_json()['message'])
-    def test_services_access(self):
-        """Тест доступа к услугам по токену"""
-        login_data = {
-            "email": "testuser@gmail.com",
-            "password": "securepassword"
-        }
-        login_response = self.app.post('/login', json=login_data)
-        self.assertEqual(login_response.status_code, 200)  # Убедитесь, что логин успешен
-        token = login_response.get_json().get('token')
-
-        # Проверка, что токен существует
-        self.assertIsNotNone(token, "Токен не был получен")
-
-        headers = {'Authorization': f'Bearer {token}'}
-        response = self.app.get('/services', headers=headers)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn('available_services', response.get_json())
-
+    # Проверка производительности
     def test_performance(self):
-        """Тест производительности"""
         start_time = time.time()
-        for _ in range(100):
-            self.app.get('/')
-        end_time = time.time()
-        self.assertLess(end_time - start_time, 5, "Тесты производительности слишком медленные!")
+        response = self.client.get('/some-heavy-endpoint')
+        elapsed_time = time.time() - start_time
+        self.assertLess(elapsed_time, 2)  # Запрос должен выполняться быстрее 2 секунд
 
-    def test_register_duplicate_email(self):
-        """Тест регистрации с существующим email"""
-        user_data = {
-            "email": "testuser@gmail.com",
-            "password": "securepassword",
-            "name": "Test User",
-            "private_key": "private_key_example",
-            "public_key": "public_key_example"
-        }
-        self.app.post('/register', json=user_data)
-        response = self.app.post('/register', json=user_data)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('Пользователь с таким email уже существует', response.get_json()['message'])
+    # Обновление настроек
+    def test_update_settings(self):
+        user_id = 1  # Тестовый ID пользователя
+        token = jwt.encode({
+            'id': user_id,
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'plan': 'free',
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    def test_request_with_large_input(self):
-        """Тест запроса с большим входным текстом"""
-        login_data = {
-            "email": "testuser@gmail.com",
-            "password": "securepassword"
-        }
-        login_response = self.app.post('/login', json=login_data)
-        token = login_response.get_json()['token']
+        with self.client:
+            response = self.client.post('/update-settings', json=dict(
+                name='Updated Name',
+                email='updated@example.com',
+                private_key='privatekey'
+            ), headers=dict(Cookie=f'token={token}'))
+            self.assertEqual(response.status_code, 200)
+            self.assertIn('Settings updated successfully', response.data.decode())
 
-        headers = {'Authorization': f'Bearer {token}'}
-        long_text = "x" * 101  # Превышаем лимит для бесплатного плана
+    def test_update_settings_without_private_key(self):
+        user_id = 1  # Тестовый ID пользователя
+        token = jwt.encode({
+            'id': user_id,
+            'name': 'Test User',
+            'email': 'test@example.com',
+            'plan': 'free',
+            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
+        }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-        response = self.app.post('/request', headers=headers, json={
-            "service_type": "resume_generation",
-            "input_text": long_text
-        })
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('Длина сообщения превышает лимит', response.get_json()['message'])
+        with self.client:
+            response = self.client.post('/update-settings', json=dict(
+                name='Updated Name'
+            ), cookies=dict(token=token))
+
+            self.assertEqual(response.status_code, 400)
+            self.assertIn('Private key is required.', response.data.decode())
+
+
+class TestServerAvailability(unittest.TestCase):
+
+    def test_server_ping(self):
+        urls = [
+            'https://neural-networks-hub.ru',
+            'https://neural-networks-hub.site'
+        ]
+
+        for url in urls:
+            with self.subTest(url=url):
+                try:
+                    response = requests.get(url)
+                    self.assertEqual(response.status_code, 200, f"Server at {url} is down or not responding correctly.")
+                except requests.exceptions.RequestException as e:
+                    self.fail(f"Server at {url} could not be reached. Error: {e}")
 
 if __name__ == '__main__':
     unittest.main()
