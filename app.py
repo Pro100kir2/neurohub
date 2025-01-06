@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request, render_template, redirect, url_for, s
 import os
 import psycopg2
 import jwt
-import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
+import pytz
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 import random
@@ -261,17 +263,141 @@ def about():
 @app.route('/privacy-policy')
 def privacy_policy():
     return render_template('privacy-policy-page.html')
+
+def get_remaining_requests(user_id):
+    query = """
+    SELECT number_of_requests_per_day - used_requests_per_day AS remaining_daily,
+           number_of_requests_per_month - used_requests_per_month AS remaining_monthly
+    FROM public.user
+    WHERE id = %s;
+    """
+    cursor = db.cursor()
+    cursor.execute(query, (user_id,))
+    result = cursor.fetchone()
+    cursor.close()
+
+    if result:
+        return {"daily": result[0], "monthly": result[1]}
+    else:
+        return {"error": "User not found"}
+
+scheduler = BackgroundScheduler(timezone=pytz.utc)
+
+
+# 🕛 Функция для сброса дневных лимитов
+def reset_daily_limits():
+    cursor = db.cursor()
+    cursor.execute("""
+        UPDATE public.user
+        SET used_requests_per_day = 0;
+    """)
+    db.commit()
+    cursor.close()
+    print(f"[{datetime.now()}] Daily limits have been reset.")
+
+
+# 📅 Функция для сброса месячных лимитов
+def reset_monthly_limits():
+    cursor = db.cursor()
+    cursor.execute("""
+        UPDATE public.user
+        SET used_requests_per_day = 0,
+            used_requests_per_month = 0;
+    """)
+    db.commit()
+    cursor.close()
+    print(f"[{datetime.now()}] Monthly limits have been reset.")
+
+
+# Запуск планировщика задач
+def start_scheduler():
+    # Сброс дневных лимитов каждый день в полночь (по UTC)
+    scheduler.add_job(reset_daily_limits, 'cron', hour=0, minute=0)
+
+    # Сброс месячных лимитов в первый день каждого месяца в полночь (по UTC)
+    scheduler.add_job(reset_monthly_limits, 'cron', day=1, hour=0, minute=0)
+
+    # Запуск планировщика
+    scheduler.start()
+
+def handle_user_request(user_id):
+    # Получаем текущие лимиты и потраченные запросы пользователя
+    query = """
+    SELECT number_of_requests_per_day, number_of_requests_per_month,
+           used_requests_per_day, used_requests_per_month
+    FROM public.user
+    WHERE id = %s;
+    """
+    cursor = db.cursor()
+    cursor.execute(query, (user_id,))
+    user_data = cursor.fetchone()
+    cursor.close()
+
+    if not user_data:
+        return {"error": "User not found"}
+
+    daily_limit, monthly_limit, used_daily, used_monthly = user_data
+
+    # Проверяем лимиты запросов
+    if used_daily >= daily_limit:
+        return {"error": "Daily request limit reached. Upgrade your plan to continue."}
+    if used_monthly >= monthly_limit:
+        return {"error": "Monthly request limit reached. Upgrade your plan to continue."}
+
+    # Если лимиты не достигнуты, уменьшаем количество оставшихся запросов
+    update_query = """
+    UPDATE public.user
+    SET used_requests_per_day = used_requests_per_day + 1,
+        used_requests_per_month = used_requests_per_month + 1
+    WHERE id = %s;
+    """
+    cursor = db.cursor()
+    cursor.execute(update_query, (user_id,))
+    db.commit()
+    cursor.close()
+
+    return {"success": "Request processed successfully"}
+
 @app.route('/choose-plan')
 def choose_plan():
     return render_template('choose-plan.html')
 
+# Обновление количества запросов
+def update_user_requests_limits(user_id, plan):
+    plan_limits = {
+        "free": {"daily": 4, "monthly": 120},
+        "basic": {"daily": 100, "monthly": 100},
+        "standard": {"daily": 500, "monthly": 500},
+        "premium": {"daily": 1000, "monthly": 1000},
+        "pro": {"daily": 3000, "monthly": 3000},
+        "developer": {"daily": 8000, "monthly": 8000},
+    }
+
+    if plan in plan_limits:
+        daily_limit = plan_limits[plan]["daily"]
+        monthly_limit = plan_limits[plan]["monthly"]
+
+        query = """
+        UPDATE public.user
+        SET number_of_requests_per_day = %s,
+            number_of_requests_per_month = %s
+        WHERE id = %s;
+        """
+        values = (daily_limit, monthly_limit, user_id)
+
+        cursor = db.cursor()
+        cursor.execute(query, values)
+        db.commit()
+        cursor.close()
+
+
 # Обработчик 404 ошибки
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     return render_template('error404.html'), 404
 
 @app.errorhandler(500)
-def internal_server_error(e):
+def internal_server_error():
     return render_template('error500.html'), 500
 # Логика выхода
 @app.route('/logout')
@@ -287,21 +413,6 @@ def neuro():
 @login_required
 def settings():
     return render_template('settings.html')
-
-
-# Укажите параметры подключения к базе данных PostgreSQL
-DATABASE_URL = os.getenv('DATABASE_URL')
-
-if DATABASE_URL:
-    # Разбираем строку подключения
-    url = urlparse(DATABASE_URL)
-
-    DB_CONFIG = {
-        'dbname': url.path[1:],  # Все после первого слэша
-        'user': url.username,
-        'password': url.password,
-        'host': url.hostname,
-        'port': url.port,}
 
 @app.route('/update-settings', methods=['POST'])
 def update_settings():
@@ -435,7 +546,7 @@ def payment_success():
     # Привилегии для каждого тарифа
     plan_privileges = {
         "Free": [
-            "10 запросов в день",
+            "4 запроса в день",
             "Доступ к 1 нейросети"
         ],
         "Basic": [
@@ -512,7 +623,7 @@ def payment_notification():
         notification_data = request.json  # YooMoney отправляет данные в формате JSON
 
         # Получите секретный ключ из настроек
-        secret_key = os.getenv('YOOMONEY_SECRET_KEY')
+        secret_key = os.getenv('DrAg/+wEBexyslspYsMj1bve')
 
         # Проверка подписи уведомления
         if not validate_notification(notification_data, secret_key):
@@ -546,4 +657,5 @@ def payment_notification():
 
 # Запуск приложения
 if __name__ == '__main__':
+    start_scheduler()
     app.run(debug=True)

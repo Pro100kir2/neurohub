@@ -33,8 +33,9 @@ def get_all_users():
         cur = conn.cursor()
 
         # Получение всех пользователей
-        cur.execute("SELECT id, name, email, public_key, private_key, plan FROM public.user")
+        cur.execute("SELECT id, name, email, public_key, private_key, plan , number_of_requests_per_day,number_of_requests_per_month, used_requests_per_day, used_requests_per_month FROM public.user")
         users = cur.fetchall()
+
 
         if not users:
             print("Нет пользователей в базе данных.")
@@ -42,12 +43,20 @@ def get_all_users():
 
         print("Список всех пользователей:")
         for user in users:
+            number_of_requests_per_day = user[6]
+            number_of_requests_per_month = user[7]
+            attempts_remaining_per_day = number_of_requests_per_day - user[8]
+            attempts_remaining_per_month = number_of_requests_per_month - user[9]
             print(f"ID: {user[0]} , "  + "\n"
                   f"Name: {user[1]} , " + "\n"
                   f"Email: {user[2]} , " + "\n"
                   f"Public Key: {user[3]} ," + "\n"
                   f"Private Key: {user[4]} ," + "\n"
                   f"Plan: {user[5]}" + "\n"
+                  f"Used remaining per day: {user[8]}" + "\n"
+                  f"Used remaining per month: {user[9]}" + "\n"
+                  f"Attempts remaining per day: {attempts_remaining_per_day}" + "\n"
+                  f"Attempts remaining per month: {attempts_remaining_per_month}" + "\n"                                                              
                   '------------------------------------')
 
     except Exception as e:

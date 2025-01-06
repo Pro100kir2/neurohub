@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with {{ service | capitalize }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            padding: 0;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .chat-header {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .chat-box {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            margin-bottom: 10px;
+        }
+        .chat-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .chat-button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #2575fc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-button:hover {
+            background: #1e66cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Chat with {{ service | capitalize }}</div>
+        <div class="chat-box" id="chat-box">
+            <p><strong>Bot:</strong> How can I help you with {{ service }}?</p>
+        </div>
+        <input type="text" class="chat-input" id="chat-input" placeholder="Type your message..." onkeypress="sendMessage(event)">
+        <button class="chat-button" onclick="sendButtonMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage(event) {
+            if (event.key === 'Enter') {
+                sendButtonMessage();
+            }
+        }
+
+        function sendButtonMessage() {
+            const input = document.getElementById('chat-input');
+            const chatBox = document.getElementById('chat-box');
+            const message = input.value.trim();
+
+            if (message) {
+                chatBox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+                input.value = '';
+
+                // Здесь отправляем запрос к API нейросети
+                fetch(`/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message, service: "{{ service }}" })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    chatBox.innerHTML += `<p><strong>Bot:</strong> ${data.reply}</p>`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    chatBox.innerHTML += `<p><strong>Bot:</strong> Sorry, an error occurred.</p>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>
