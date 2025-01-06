@@ -582,18 +582,6 @@ def payment_success():
         if conn:
             conn.close()
 
-def validate_notification(notification_data, secret_key):
-    # Создайте строку для подписи
-    str_to_hash = f"{notification_data['notification_type']}&{notification_data['operation_id']}&" \
-                  f"{notification_data['amount']}&{notification_data['currency']}&" \
-                  f"{notification_data['datetime']}&{notification_data['sender']}&" \
-                  f"{notification_data['codepro']}&{secret_key}&{notification_data['label']}"
-    # Вычислите sha1-хэш
-    computed_hash = hashlib.sha1(str_to_hash.encode('utf-8')).hexdigest()
-
-    # Сравните с `sha1_hash` из уведомления
-    return computed_hash == notification_data['sha1_hash']
-
 def determine_plan_based_on_amount(amount):
     plans = {
         0: "Free",          # Бесплатный тариф
@@ -648,6 +636,18 @@ def payment_notification():
     except Exception as e:
         print(f"Ошибка при обработке уведомления: {e}")
         return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
+
+def validate_notification(notification_data, secret_key):
+    # Создайте строку для подписи
+    str_to_hash = f"{notification_data['notification_type']}&{notification_data['operation_id']}&" \
+                  f"{notification_data['amount']}&{notification_data['currency']}&" \
+                  f"{notification_data['datetime']}&{notification_data['sender']}&" \
+                  f"{notification_data['codepro']}&{secret_key}&{notification_data['label']}"
+    # Вычислите sha1-хэш
+    computed_hash = hashlib.sha1(str_to_hash.encode('utf-8')).hexdigest()
+
+    # Сравните с `sha1_hash` из уведомления
+    return computed_hash == notification_data['sha1_hash']
 
 # Запуск приложения
 if __name__ == '__main__':
