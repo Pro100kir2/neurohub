@@ -3,7 +3,7 @@ import os
 import psycopg2
 import jwt
 from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
+import datetime
 import pytz
 from dotenv import load_dotenv
 from urllib.parse import urlparse
@@ -70,7 +70,7 @@ def refresh_token(token):
             'name': user_data['name'],
             'email': user_data['email'],
             'plan': user_data['plan'],
-            'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)  # Новый срок действия
+            'exp': datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)  # Новый срок действия
         }, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
         return new_token
@@ -357,7 +357,6 @@ def handle_user_request(user_id):
     cursor.close()
 
     return {"success": "Request processed successfully"}
-
 @app.route('/choose-plan')
 def choose_plan():
     return render_template('choose-plan.html')
