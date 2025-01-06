@@ -33,15 +33,6 @@ if DATABASE_URL:
         'host': url.hostname,
         'port': url.port,
     }
-else:
-    # Если строка подключения не задана, используем локальные настройки
-    DB_CONFIG = {
-        'dbname': os.getenv('DB_NAME', 'neurohub'),
-        'user': os.getenv('DB_USER', 'postgres'),
-        'password': os.getenv('DB_PASSWORD', 'password'),
-        'host': os.getenv('DB_HOST', 'localhost'),
-        'port': os.getenv('DB_PORT', '5432'),
-    }
 
 # JWT конфигурация
 JWT_SECRET = os.getenv('JWT_SECRET', 'your_jwt_secret_key')
