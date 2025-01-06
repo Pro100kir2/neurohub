@@ -582,6 +582,18 @@ def payment_success():
         if conn:
             conn.close()
 
+def validate_notification(notification_data, secret_key):
+    # Создайте строку для подписи
+    str_to_hash = f"{notification_data['notification_type']}&{notification_data['operation_id']}&" \
+                  f"{notification_data['amount']}&{notification_data['currency']}&" \
+                  f"{notification_data['datetime']}&{notification_data['sender']}&" \
+                  f"{notification_data['codepro']}&{secret_key}&{notification_data['label']}"
+    # Вычислите sha1-хэш
+    computed_hash = hashlib.sha1(str_to_hash.encode('utf-8')).hexdigest()
+
+    # Сравните с `sha1_hash` из уведомления
+    return computed_hash == notification_data['sha1_hash']
+
 def determine_plan_based_on_amount(amount):
     plans = {
         0: "Free",          # Бесплатный тариф
@@ -597,12 +609,11 @@ def determine_plan_based_on_amount(amount):
 @app.route('/payment-notification', methods=['POST'])
 def payment_notification():
     try:
-        # Проверяем, что контент соответствует ожидаемому типу
-        if request.content_type != 'application/x-www-form-urlencoded':
-            return jsonify({'message': 'Неверный тип контента. Ожидается application/x-www-form-urlencoded.'}), 415
+        # Получение данных из запроса
+        notification_data = request.form  # Используем request.form для данных POST-запроса с типом application/x-www-form-urlencoded
 
-        # Получение данных из запроса как пары ключ/значение
-        notification_data = request.form  # Используем form, так как тип контента application/x-www-form-urlencoded
+        # Выводим данные для отладки
+        print("Полученные данные от YooMoney:", notification_data)
 
         # Получите секретный ключ из настроек
         secret_key = os.getenv('DrAg/+wEBexyslspYsMj1bve')
@@ -637,17 +648,6 @@ def payment_notification():
         print(f"Ошибка при обработке уведомления: {e}")
         return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
 
-def validate_notification(notification_data, secret_key):
-    # Создайте строку для подписи
-    str_to_hash = f"{notification_data['notification_type']}&{notification_data['operation_id']}&" \
-                  f"{notification_data['amount']}&{notification_data['currency']}&" \
-                  f"{notification_data['datetime']}&{notification_data['sender']}&" \
-                  f"{notification_data['codepro']}&{secret_key}&{notification_data['label']}"
-    # Вычислите sha1-хэш
-    computed_hash = hashlib.sha1(str_to_hash.encode('utf-8')).hexdigest()
-
-    # Сравните с `sha1_hash` из уведомления
-    return computed_hash == notification_data['sha1_hash']
 
 # Запуск приложения
 if __name__ == '__main__':
