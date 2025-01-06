@@ -609,8 +609,12 @@ def determine_plan_based_on_amount(amount):
 @app.route('/payment-notification', methods=['POST'])
 def payment_notification():
     try:
-        # Получение данных из запроса
-        notification_data = request.json  # YooMoney отправляет данные в формате JSON
+        # Проверяем, что контент соответствует ожидаемому типу
+        if request.content_type != 'application/x-www-form-urlencoded':
+            return jsonify({'message': 'Неверный тип контента. Ожидается application/x-www-form-urlencoded.'}), 415
+
+        # Получение данных из запроса как пары ключ/значение
+        notification_data = request.form  # Используем form, так как тип контента application/x-www-form-urlencoded
 
         # Получите секретный ключ из настроек
         secret_key = os.getenv('DrAg/+wEBexyslspYsMj1bve')

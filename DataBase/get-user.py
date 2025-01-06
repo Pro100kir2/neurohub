@@ -35,8 +35,6 @@ def get_all_users():
         # Получение всех пользователей
         cur.execute("SELECT id, name, email, public_key, private_key, plan , number_of_requests_per_day,number_of_requests_per_month, used_requests_per_day, used_requests_per_month FROM public.user")
         users = cur.fetchall()
-
-
         if not users:
             print("Нет пользователей в базе данных.")
             return
