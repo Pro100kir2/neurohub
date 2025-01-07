@@ -606,6 +606,7 @@ def determine_plan_based_on_amount(amount):
     # Найдите ближайший соответствующий тариф по сумме
     return plans.get(int(amount), "Free")  # По умолчанию "Free", если сумма не соответствует
 
+
 @app.route('/payment-notification', methods=['POST'])
 def payment_notification():
     try:
@@ -615,8 +616,12 @@ def payment_notification():
         # Выводим данные для отладки
         print("Полученные данные от YooMoney:", notification_data)
 
+        # Если это тестовое уведомление, не обрабатываем его
+        if notification_data.get('test_notification') == 'true':
+            return jsonify({'message': 'Тестовое уведомление, не обработано.'}), 200
+
         # Получите секретный ключ из настроек
-        secret_key = os.getenv('DrAg/+wEBexyslspYsMj1bve')
+        secret_key = os.getenv('nd2RVTSdzG/UmiPtUOksLdrD')
 
         # Проверка подписи уведомления
         if not validate_notification(notification_data, secret_key):
@@ -628,6 +633,10 @@ def payment_notification():
             user_id = notification_data.get('label')  # Вы указывали label при создании платежа как user_id
             amount = notification_data.get('amount')  # Сумма платежа
             plan = determine_plan_based_on_amount(float(amount))  # Определяем тариф по сумме
+
+            # Если label пустой, игнорируем или возвращаем ошибку
+            if not user_id:
+                return jsonify({'message': 'Отсутствует идентификатор пользователя (label).'}), 400
 
             conn = get_db_connection()
             cur = conn.cursor()
