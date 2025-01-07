@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session, flash, abort
 import os
 import psycopg2
 import jwt
@@ -16,6 +16,21 @@ import hashlib
 # Flask приложение
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
+
+# Блокируем попытки доступа к WordPress-путям
+BLOCKED_PATHS = [
+    "/wordpress",
+    "/wp-admin",
+    "/wp-login",
+    "/wp-content",
+    "/wp-includes",
+    "/setup-config.php"
+]
+
+@app.before_request
+def block_wp_paths():
+    if any(blocked in request.path for blocked in BLOCKED_PATHS):
+        abort(403)
 
 load_dotenv()  # Загрузит переменные из .env файла
 
