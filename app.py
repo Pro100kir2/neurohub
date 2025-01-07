@@ -12,6 +12,7 @@ import string
 from functools import wraps
 import traceback
 import hashlib
+import logging
 
 # Flask приложение
 app = Flask(__name__)
@@ -31,6 +32,10 @@ BLOCKED_PATHS = [
 def block_wp_paths():
     if any(blocked in request.path for blocked in BLOCKED_PATHS):
         abort(403)
+
+# Отключаем логи для заблокированных запросов
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 load_dotenv()  # Загрузит переменные из .env файла
 
