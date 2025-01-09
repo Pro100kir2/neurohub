@@ -22,8 +22,7 @@ BLOCKED_PATHS = ["/wordpress", "/wp-admin", "/wp-login", "/wp-content", "/wp-inc
 
 # Создаём кастомный логгер
 class CustomFilter(logging.Filter):
-    @staticmethod
-    def filter(record):
+    def filter(self, record: logging.LogRecord) -> bool:
         # Игнорируем записи с кодом 403
         return " 403 " not in record.getMessage()
 
@@ -402,7 +401,7 @@ def update_user_requests_limits(user_id, plan):
 
 # Обработчик 404 ошибки
 @app.errorhandler(404)
-def page_not_found():
+def page_not_found(error):
     return render_template('error404.html'), 404
 
 @app.errorhandler(500)
