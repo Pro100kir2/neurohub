@@ -12,6 +12,7 @@ import string
 from functools import wraps
 import traceback
 import hashlib
+import logging
 
 # Flask приложение
 app = Flask(__name__)
