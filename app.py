@@ -12,30 +12,28 @@ import string
 from functools import wraps
 import traceback
 import hashlib
-import logging
 
 # Flask приложение
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
 
-# Блокируем попытки доступа к WordPress-путям
-BLOCKED_PATHS = [
-    "/wordpress",
-    "/wp-admin",
-    "/wp-login",
-    "/wp-content",
-    "/wp-includes",
-    "/setup-config.php"
-]
+BLOCKED_PATHS = ["/wordpress", "/wp-admin", "/wp-login", "/wp-content", "/wp-includes", "/setup-config.php"]
 
+# Создаём кастомный логгер
+class CustomFilter(logging.Filter):
+    @staticmethod
+    def filter(record):
+        # Игнорируем записи с кодом 403
+        return " 403 " not in record.getMessage()
+
+log = logging.getLogger('werkzeug')
+log.addFilter(CustomFilter())
+
+# Блокировка запросов к запрещённым путям
 @app.before_request
 def block_wp_paths():
     if any(blocked in request.path for blocked in BLOCKED_PATHS):
         abort(403)
-
-# Отключаем логи для заблокированных запросов
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
 
 load_dotenv()  # Загрузит переменные из .env файла
 
@@ -641,7 +639,7 @@ def payment_notification():
             return jsonify({'message': 'Тестовое уведомление, не обработано.'}), 200
 
         # Получите секретный ключ из настроек
-        secret_key = os.getenv('nd2RVTSdzG/UmiPtUOksLdrD')
+        secret_key = os.getenv('YOOMONEY_SECRET_KEY')
 
         # Проверка подписи уведомления
         if not validate_notification(notification_data, secret_key):
