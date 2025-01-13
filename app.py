@@ -592,6 +592,36 @@ def payment_success():
     finally:
         if conn:
             conn.close()
+@app.route('/assign-free-plan', methods=['POST'])
+@login_required
+def assign_free_plan():
+    user_id = session.get('user_id')  # Получаем ID пользователя из сессии
+
+    if not user_id:
+        return jsonify({'message': 'Необходима авторизация.'}), 401
+
+    try:
+        # Устанавливаем бесплатный тариф
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE public.user
+            SET plan = 'Free'
+            WHERE id = %s;
+        """, (user_id,))
+        conn.commit()
+
+        # Обновляем лимиты запросов для бесплатного тарифа
+        update_user_requests_limits(user_id, 'free')
+
+        # Перенаправляем на страницу успеха
+        return redirect('/choose-plan/payment-success?plan=Free')
+    except Exception as e:
+        return jsonify({'message': f'Ошибка: {str(e)}'}), 500
+    finally:
+        if conn:
+            conn.close()
+
 
 def validate_notification(notification_data, secret_key):
     # Создайте строку для подписи
@@ -612,7 +642,7 @@ def determine_plan_based_on_amount(amount):
         500: "Standard",    # 500 рублей
         1000: "Premium",    # 1000 рублей
         3000: "Pro",        # 3000 рублей
-        8000: "Developer"   # 8000 рублей
+        6500: "Developer"   # 6500 рублей
     }
     # Найдите ближайший соответствующий тариф по сумме
     return plans.get(int(amount), "Free")  # По умолчанию "Free", если сумма не соответствует

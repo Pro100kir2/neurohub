@@ -126,17 +126,8 @@
             <h3>Free Plan</h3>
             <p>10 requests per day</p>
             <p>Access to 1 neural network</p>
-            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
-                <input type="hidden" name="tariff_id" value="free">
-                <input type="hidden" name="receiver" value="4100118921201712">
-                <input type="hidden" name="formcomment" value="Оплата тарифа Free Plan">
-                <input type="hidden" name="short-dest" value="Free Plan">
-                <input type="hidden" name="label" value="free-plan">
-                <input type="hidden" name="quickpay-form" value="donate">
-                <input type="hidden" name="targets" value="Free Plan">
-                <input type="hidden" name="sum" value="1" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
-                <button type="submit">Try for Free</button>
+            <form method="POST" action="/assign-free-plan">
+                <button type="submit" class="pay-button" id="freeButton">Try for Free</button>
             </form>
         </div>
 
@@ -155,7 +146,7 @@
                 <input type="hidden" name="quickpay-form" value="donate">
                 <input type="hidden" name="targets" value="Basic Plan">
                 <input type="hidden" name="sum" value="199" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <input type="hidden" name="successURL" value="https://neural-networks-hub.ru/choose-plan/payment-success">
                 <button type="submit">Pay</button>
             </form>
         </div>
@@ -175,7 +166,7 @@
                 <input type="hidden" name="quickpay-form" value="donate">
                 <input type="hidden" name="targets" value="Standard Plan">
                 <input type="hidden" name="sum" value="499" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <input type="hidden" name="successURL" value="https://neural-networks-hub.ru/choose-plan/payment-success">
                 <button type="submit">Pay</button>
             </form>
         </div>
@@ -195,7 +186,7 @@
                 <input type="hidden" name="quickpay-form" value="donate">
                 <input type="hidden" name="targets" value="Premium Plan">
                 <input type="hidden" name="sum" value="899" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <input type="hidden" name="successURL" value="https://neural-networks-hub.ru/choose-plan/payment-success">
                 <button type="submit">Pay</button>
             </form>
         </div>
@@ -216,7 +207,7 @@
                 <input type="hidden" name="quickpay-form" value="donate">
                 <input type="hidden" name="targets" value="Pro Plan">
                 <input type="hidden" name="sum" value="2499" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <input type="hidden" name="successURL" value="https://neural-networks-hub.ru/choose-plan/payment-success">
                 <button type="submit">Pay</button>
             </form>
         </div>
@@ -236,8 +227,8 @@
                 <input type="hidden" name="label" value="developer-plan">
                 <input type="hidden" name="quickpay-form" value="donate">
                 <input type="hidden" name="targets" value="Developer Plan">
-                <input type="hidden" name="sum" value="6500" data-type="number">
-                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <input type="hidden" name="sum" value="8000" data-type="number">
+                <input type="hidden" name="successURL" value="https://neural-networks-hub.ru/choose-plan/payment-success">
                 <button type="submit">Pay</button>
             </form>
         </div>
