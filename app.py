@@ -14,6 +14,7 @@ import traceback
 import hashlib
 import logging
 
+                                #Всё необходимое для работы сайта
 # Flask приложение
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'supersecretkey')
@@ -112,6 +113,8 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+                                    #Страницы сайта
+
 # Главная страница
 @app.route('/')
 def home():
@@ -397,16 +400,6 @@ def update_user_requests_limits(user_id, plan):
         cursor.execute(query, values)
         db.commit()
         cursor.close()
-
-
-# Обработчик 404 ошибки
-@app.errorhandler(404)
-def page_not_found(error):
-    return render_template('error404.html'), 404
-
-@app.errorhandler(500)
-def internal_server_error():
-    return render_template('error500.html'), 500
 # Логика выхода
 @app.route('/logout')
 def logout():
@@ -675,7 +668,14 @@ def payment_notification():
         print(f"Ошибка при обработке уведомления: {e}")
         return jsonify({'message': f'Ошибка сервера: {str(e)}'}), 500
 
+# Обработчик 404 ошибки
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('error404.html'), 404
 
+@app.errorhandler(500)
+def internal_server_error(error):
+    return render_template('error500.html'), 500
 # Запуск приложения
 if __name__ == '__main__':
     start_scheduler()

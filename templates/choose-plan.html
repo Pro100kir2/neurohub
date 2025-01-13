@@ -11,10 +11,9 @@
     <link rel="icon" href="/static/images/Group_46.png" sizes="192x192" type="image/png">
     <link rel="icon" href="/static/images/Group_46.png" sizes="512x512" type="image/png">
 
-  <!-- Иконка для Windows (neuro-icon.ico) -->
+    <!-- Иконка для Windows (neuro-icon.ico) -->
     <link rel="shortcut icon" href="/static/images/Group_46.png" type="image/png">
     <style>
-        /* Стиль для страницы тарифов */
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to right, #6a11cb, #2575fc);
@@ -95,6 +94,10 @@
             background-color: #1e66cc;
         }
 
+        .pricing-card form {
+            margin-top: 20px;
+        }
+
         @media (max-width: 768px) {
             .pricing-cards {
                 grid-template-columns: 1fr 1fr;
@@ -118,53 +121,125 @@
     </div>
 
     <div class="pricing-cards">
+        <!-- Free Plan -->
         <div class="pricing-card">
             <h3>Free Plan</h3>
             <p>10 requests per day</p>
             <p>Access to 1 neural network</p>
-            <button onclick="window.location.href='/subscribe/free'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="free">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Free Plan">
+                <input type="hidden" name="short-dest" value="Free Plan">
+                <input type="hidden" name="label" value="free-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Free Plan">
+                <input type="hidden" name="sum" value="0" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Try for Free</button>
+            </form>
         </div>
 
+        <!-- Basic Plan -->
         <div class="pricing-card">
             <h3>Basic Plan</h3>
             <p>100 requests per month</p>
             <p>Access to all neural networks</p>
             <p>Cost: 199 RUB/month</p>
-            <button onclick="window.location.href='/subscribe/basic'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="basic">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Basic Plan">
+                <input type="hidden" name="short-dest" value="Basic Plan">
+                <input type="hidden" name="label" value="basic-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Basic Plan">
+                <input type="hidden" name="sum" value="199" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Pay</button>
+            </form>
         </div>
 
+        <!-- Standard Plan -->
         <div class="pricing-card">
             <h3>Standard Plan</h3>
             <p>500 requests per month</p>
             <p>Access to all neural networks</p>
             <p>Cost: 499 RUB/month</p>
-            <button onclick="window.location.href='/subscribe/standard'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="standard">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Standard Plan">
+                <input type="hidden" name="short-dest" value="Standard Plan">
+                <input type="hidden" name="label" value="standard-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Standard Plan">
+                <input type="hidden" name="sum" value="499" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Pay</button>
+            </form>
         </div>
 
+        <!-- Premium Plan -->
         <div class="pricing-card">
             <h3>Premium Plan</h3>
             <p>1000 requests per month</p>
             <p>Access to all neural networks with priority processing</p>
             <p>Cost: 899 RUB/month</p>
-            <button onclick="window.location.href='/subscribe/premium'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="premium">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Premium Plan">
+                <input type="hidden" name="short-dest" value="Premium Plan">
+                <input type="hidden" name="label" value="premium-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Premium Plan">
+                <input type="hidden" name="sum" value="899" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Pay</button>
+            </form>
         </div>
 
+        <!-- Pro Plan -->
         <div class="pricing-card">
             <h3>Pro Plan</h3>
             <p>3000 requests per month</p>
             <p>Access to all neural networks with priority processing</p>
             <p>Support for up to 5 users</p>
             <p>Cost: 2499 RUB/month</p>
-            <button onclick="window.location.href='/subscribe/pro'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="pro">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Pro Plan">
+                <input type="hidden" name="short-dest" value="Pro Plan">
+                <input type="hidden" name="label" value="pro-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Pro Plan">
+                <input type="hidden" name="sum" value="2499" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Pay</button>
+            </form>
         </div>
 
+        <!-- Developer Plan -->
         <div class="pricing-card">
             <h3>Developer Plan</h3>
             <p>8000 requests per month</p>
             <p>Access to all neural networks with priority processing</p>
             <p>Support for up to 10 users</p>
             <p>Cost: 6500 RUB/month</p>
-            <button onclick="window.location.href='/subscribe/developer'">Pay</button>
+            <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+                <input type="hidden" name="tariff_id" value="developer">
+                <input type="hidden" name="receiver" value="4100118921201712">
+                <input type="hidden" name="formcomment" value="Оплата тарифа Developer Plan">
+                <input type="hidden" name="short-dest" value="Developer Plan">
+                <input type="hidden" name="label" value="developer-plan">
+                <input type="hidden" name="quickpay-form" value="donate">
+                <input type="hidden" name="targets" value="Developer Plan">
+                <input type="hidden" name="sum" value="6500" data-type="number">
+                <input type="hidden" name="successURL" value="https://your-site.com/tariff">
+                <button type="submit">Pay</button>
+            </form>
         </div>
     </div>
 </body>
